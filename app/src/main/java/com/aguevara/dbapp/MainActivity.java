@@ -1,6 +1,9 @@
 package com.aguevara.dbapp;
 
 import android.app.Activity;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -8,6 +11,7 @@ import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.w3c.dom.Document;
@@ -16,8 +20,11 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -29,6 +36,8 @@ import java.net.URLConnection;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+
+import static android.content.ContentValues.TAG;
 
 
 class PostEntry
@@ -84,6 +93,11 @@ public class MainActivity extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        final ImageView post_image = (ImageView) findViewById(R.id.post_image);
+        final String imgURL = "http://andrs.ec/dev/mobile_computing/assignment2/images/test_image.bmp";
+
+        new ImageLoadTask(imgURL, post_image).execute();
+
         // At the start of the App - load everything
         new Thread ()
         {
@@ -93,6 +107,8 @@ public class MainActivity extends Activity
                 final String s = getContent (baseUrl + "dbLoadDB.php");
 
                 Log.i("XML",s);
+
+
 
                 runOnUiThread (new Thread(new Runnable()
                 {
@@ -375,7 +391,7 @@ public class MainActivity extends Activity
                 }));
             }
         }.start ();
-        
+
     }
 
     public void likePost()
@@ -401,6 +417,7 @@ public class MainActivity extends Activity
         }.start ();
     }
 
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
@@ -408,4 +425,5 @@ public class MainActivity extends Activity
         //getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
+
 }
