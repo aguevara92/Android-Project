@@ -84,19 +84,28 @@ public class MainActivity extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        /* At the start of the App - load everything
-        final String s = getContent (baseUrl + "dbLoadDB.php");
-        Log.i("XML",s);
-        runOnUiThread (new Thread(new Runnable()
+        // At the start of the App - load everything
+        new Thread ()
         {
-            public void run()
+            @Override
+            public void run ()
             {
-                parseContent (s);
-                n = 0;
-                loadRecord ();
+                final String s = getContent (baseUrl + "dbLoadDB.php");
+
+                Log.i("XML",s);
+
+                runOnUiThread (new Thread(new Runnable()
+                {
+                    public void run()
+                    {
+                        parseContent (s);
+                        n = 0;
+                        loadRecord ();
+                    }
+                }));
             }
-        }));
-        */
+        }.start ();
+
 
 
         final Button btn_load = (Button)findViewById(R.id.btn_load);
@@ -376,6 +385,24 @@ public class MainActivity extends Activity
     public void likePost()
     {
 
+        new Thread ()
+        {
+            @Override
+            public void run ()
+            {
+                int i = Integer.parseInt(Posts.postEntry[n].id);
+                final String s = getContent (baseUrl + "giveLike.php?id=" + i);
+
+                runOnUiThread (new Thread(new Runnable()
+                {
+                    public void run()
+                    {
+                        parseContent (s);
+                        loadRecord ();
+                    }
+                }));
+            }
+        }.start ();
     }
 
     @Override
