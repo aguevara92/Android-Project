@@ -355,17 +355,13 @@ public class MainActivity extends Activity
 
     public void deleteRecord ()
     {
-        /*
-        TextView t1 = (TextView)findViewById(R.id.textView01);
-
-        final String i = t1.getText ().toString ();
-
 
         new Thread ()
         {
             @Override
             public void run ()
             {
+                int i = Integer.parseInt(Posts.postEntry[n].id);
                 final String s = getContent (baseUrl + "dbDeleteDB.php?id=" + i);
 
                 runOnUiThread (new Thread(new Runnable()
@@ -379,7 +375,7 @@ public class MainActivity extends Activity
                 }));
             }
         }.start ();
-        */
+        
     }
 
     public void likePost()
