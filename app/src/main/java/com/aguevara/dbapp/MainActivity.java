@@ -1,9 +1,21 @@
 package com.aguevara.dbapp;
 
+import android.Manifest;
 import android.app.Activity;
+import android.app.Dialog;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.net.Uri;
 import android.os.Environment;
+import android.provider.MediaStore;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,7 +24,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -80,12 +94,27 @@ class Posts
 
 public class MainActivity extends Activity
 {
+    final Context context = this;
+
+    Dialog dialog;
+
     Posts posts;
     PostEntry pe;
 
     String baseUrl = "http://andrs.ec/dev/mobile_computing/assignment2/";
 
     int n = -1;
+
+    private Uri fileUri;
+    String picturePath;
+    Uri selectedImage;
+    Bitmap photo;
+
+    // CAMERA Permissions
+    private static final int REQUEST_CAMERA = 1;
+    private static String[] PERMISSIONS = {
+            Manifest.permission.CAMERA
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -97,6 +126,8 @@ public class MainActivity extends Activity
         final String imgURL = "http://andrs.ec/dev/mobile_computing/assignment2/images/test_image.bmp";
 
         new ImageLoadTask(imgURL, post_image).execute();
+
+        verifyStoragePermissions(this);
 
         // At the start of the App - load everything
         new Thread ()
@@ -183,7 +214,7 @@ public class MainActivity extends Activity
         {
             public void onClick (View view)
             {
-                addRecord ();
+                openDialog();
             }
         });
 
@@ -416,6 +447,84 @@ public class MainActivity extends Activity
             }
         }.start ();
     }
+
+    public void openDialog (){
+        // custom dialog
+        dialog = new Dialog(context);
+        dialog.setContentView(R.layout.new_post);
+
+        // if button is clicked, open the camera
+        Button btn_add_photo = (Button) dialog.findViewById(R.id.btn_add_photo);
+        btn_add_photo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openCamera();
+            }
+        });
+
+        // if button is clicked, add the post and close the custom dialog
+        Button btn_submit = (Button) dialog.findViewById(R.id.btn_submit);
+        btn_submit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addRecord ();
+                dialog.dismiss();
+            }
+        });
+
+        dialog.show();
+    }
+
+
+    private void openCamera() {
+
+        verifyStoragePermissions(this);
+
+        // Check Camera
+        if (getApplicationContext().getPackageManager().hasSystemFeature(
+                PackageManager.FEATURE_CAMERA)) {
+            // Open default camera
+            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
+
+            // start the image capture Intent
+            startActivityForResult(intent, 100);
+
+        } else {
+            Toast.makeText(getApplication(), "Camera not supported", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 100 && resultCode == RESULT_OK) {
+            Log.i("YES","On activity biatch!");
+
+            Bundle extras = data.getExtras();
+            Bitmap imageBitmap = (Bitmap) extras.get("data");
+
+            //ImageView post_preview = (ImageView) findViewById(R.id.post_preview);
+            ImageView post_preview = (ImageView)dialog.findViewById(R.id.post_preview);
+            post_preview.setImageBitmap(imageBitmap);
+
+
+        }
+    }
+
+    public static void verifyStoragePermissions(Activity activity) {
+        // Check if we have write permission
+        int permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+        if (permission != PackageManager.PERMISSION_GRANTED) {
+            // We don't have permission so prompt the user
+            ActivityCompat.requestPermissions(
+                    activity,
+                    PERMISSIONS,
+                    REQUEST_CAMERA
+            );
+        }
+    }
+
 
 
     @Override
