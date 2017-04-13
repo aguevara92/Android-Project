@@ -3,6 +3,7 @@ package com.aguevara.dbapp;
 import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -12,12 +13,14 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -46,10 +49,21 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
+
 
 import static android.content.ContentValues.TAG;
 
@@ -107,8 +121,14 @@ public class MainActivity extends Activity
 
     private Uri fileUri;
     String picturePath;
+    String ba1;
     Uri selectedImage;
     Bitmap photo;
+    ProgressDialog prgDialog;
+    String encodedString;
+    String imgPath, fileName;
+    Bitmap bitmap;
+    private static int RESULT_LOAD_IMG = 1;
 
     // CAMERA Permissions
     private static final int REQUEST_CAMERA = 1;
@@ -122,10 +142,9 @@ public class MainActivity extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final ImageView post_image = (ImageView) findViewById(R.id.post_image);
-        final String imgURL = "http://andrs.ec/dev/mobile_computing/assignment2/images/test_image.bmp";
-
-        new ImageLoadTask(imgURL, post_image).execute();
+        //final ImageView post_image = (ImageView) findViewById(R.id.post_image);
+        //final String imgURL = "http://andrs.ec/dev/mobile_computing/assignment2/images/test_image.bmp";
+        //new ImageLoadTask(imgURL, post_image).execute();
 
         verifyStoragePermissions(this);
 
@@ -355,35 +374,60 @@ public class MainActivity extends Activity
         TextView text_likes = (TextView)findViewById(R.id.text_likes);
         text_likes.setText (Posts.postEntry[n].likes);
 
-        TextView content = (TextView)findViewById(R.id.content);
-        content.setText (Posts.postEntry[n].picture);
+        //TextView content = (TextView)findViewById(R.id.content);
+        ImageView post_image = (ImageView)findViewById(R.id.post_image);
+        new ImageLoadTask((Posts.postEntry[n].picture), post_image).execute();
     }
 
     public void addRecord ()
     {
-        /*
-        EditText e1 = (EditText)findViewById(R.id.editText1);
+        EditText add_title = (EditText)dialog.findViewById(R.id.add_title);
+        final String at  = add_title.getText ().toString ();
 
-        final String f = e1.getText ().toString ();
+        ImageView post_preview = (ImageView)dialog.findViewById(R.id.post_preview);
+        post_preview.buildDrawingCache();
+        Bitmap bitmap = post_preview.getDrawingCache();
+        final String b64 = encodeBitmap(bitmap);
 
-        EditText e2 = (EditText)findViewById(R.id.editText2);
-        final String l = e2.getText ().toString ();
+        // Provisional - get latitude and longitude
+        final String a = "0";
 
-        EditText e3 = (EditText)findViewById(R.id.editText3);
-        final String a = e3.getText ().toString ();
 
-        EditText e4 = (EditText)findViewById(R.id.editText4);
-        final String t  = e4.getText ().toString ();
 
-        EditText e5 = (EditText)findViewById(R.id.editText5);
-        final String em  = e5.getText ().toString ();
+        RequestQueue MyRequestQueue = Volley.newRequestQueue(this);
 
+        String url = "http://andrs.ec/dev/mobile_computing/assignment2/dbAddDB.php";
+        StringRequest MyStringRequest = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                //This code is executed if the server responds, whether or not the response contains data.
+                //The String 'response' contains the server's response.
+            }
+            }, new Response.ErrorListener() { //Create an error listener to handle errors appropriately.
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    //This code is executed if there is an error.
+                }
+            }) {
+                protected Map<String, String> getParams() {
+                    Map<String, String> MyData = new HashMap<String, String>();
+                    MyData.put("title", at); //Add the data you'd like to send to the server.
+                    MyData.put("picture", b64); //Add the data you'd like to send to the server.
+                    MyData.put("latitude", a); //Add the data you'd like to send to the server.
+                    MyData.put("longitude", a); //Add the data you'd like to send to the server.
+                    return MyData;
+                }
+            };
+        MyRequestQueue.add(MyStringRequest);
+
+
+        
         new Thread ()
         {
             @Override
             public void run ()
             {
-                final String s = getContent (baseUrl + "dbAddDB.php?firstname=" + f + "&lastname=" + l + "&address=" + a + "&telephone=" + t + "&email=" + em);
+                final String s = getContent (baseUrl + "dbLoadDB.php");
 
                 runOnUiThread (new Thread(new Runnable()
                 {
@@ -396,7 +440,9 @@ public class MainActivity extends Activity
                 }));
             }
         }.start ();
-        */
+
+
+
     }
 
 
@@ -481,8 +527,7 @@ public class MainActivity extends Activity
         verifyStoragePermissions(this);
 
         // Check Camera
-        if (getApplicationContext().getPackageManager().hasSystemFeature(
-                PackageManager.FEATURE_CAMERA)) {
+        if (getApplicationContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
             // Open default camera
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
@@ -498,12 +543,10 @@ public class MainActivity extends Activity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 100 && resultCode == RESULT_OK) {
-            Log.i("YES","On activity biatch!");
 
             Bundle extras = data.getExtras();
             Bitmap imageBitmap = (Bitmap) extras.get("data");
 
-            //ImageView post_preview = (ImageView) findViewById(R.id.post_preview);
             ImageView post_preview = (ImageView)dialog.findViewById(R.id.post_preview);
             post_preview.setImageBitmap(imageBitmap);
 
@@ -525,6 +568,16 @@ public class MainActivity extends Activity
         }
     }
 
+    public String encodeBitmap(Bitmap bm) {
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bm.compress(Bitmap.CompressFormat.PNG, 10 , baos);
+        byte[] img = baos.toByteArray();
+
+        String s = Base64.encodeToString(img , Base64.DEFAULT);
+
+        return s;
+    }
 
 
     @Override
