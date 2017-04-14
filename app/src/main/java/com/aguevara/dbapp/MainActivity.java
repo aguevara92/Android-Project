@@ -124,6 +124,8 @@ public class MainActivity extends Activity implements LocationListener
 
     int n = -1;
 
+    AsyncTask loadingImageTask;
+
     private Uri fileUri;
     String picturePath;
     String ba1;
@@ -152,10 +154,6 @@ public class MainActivity extends Activity implements LocationListener
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        //final ImageView post_image = (ImageView) findViewById(R.id.post_image);
-        //final String imgURL = "http://andrs.ec/dev/mobile_computing/assignment2/images/test_image.bmp";
-        //new ImageLoadTask(imgURL, post_image).execute();
 
         verifyStoragePermissions(this);
 
@@ -220,8 +218,12 @@ public class MainActivity extends Activity implements LocationListener
             {
                 if (n > 0)
                 {
+                    //Cancel the current AsyncTask
+                    loadingImageTask.cancel(true);
+
                     n --;
                     loadRecord ();
+
                 }
             }
         });
@@ -233,6 +235,9 @@ public class MainActivity extends Activity implements LocationListener
             {
                 if (n < Posts.count - 1)
                 {
+                    //Cancel the current AsyncTask
+                    loadingImageTask.cancel(true);
+
                     n ++;
                     loadRecord ();
                 }
@@ -396,7 +401,7 @@ public class MainActivity extends Activity implements LocationListener
         TextView text_title = (TextView)findViewById(R.id.text_title);
         text_title.setText (Posts.postEntry[n].title);
 
-        // provisional location coords display
+        // location coords display
         TextView text_location = (TextView)findViewById(R.id.text_location);
         text_location.setText (Posts.postEntry[n].latitude + " - " + Posts.postEntry[n].longitude );
 
@@ -405,9 +410,9 @@ public class MainActivity extends Activity implements LocationListener
         TextView text_likes = (TextView)findViewById(R.id.text_likes);
         text_likes.setText (Posts.postEntry[n].likes);
 
-        //TextView content = (TextView)findViewById(R.id.content);
+
         ImageView post_image = (ImageView)findViewById(R.id.post_image);
-        new ImageLoadTask((Posts.postEntry[n].picture), post_image).execute();
+        loadingImageTask = new ImageLoadTask((Posts.postEntry[n].picture), post_image).execute();
     }
 
     public void addRecord ()
@@ -574,13 +579,12 @@ public class MainActivity extends Activity implements LocationListener
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 100 && resultCode == RESULT_OK) {
-
+            // after coming back from the camera, put the image in the imageView Preview
             Bundle extras = data.getExtras();
             Bitmap imageBitmap = (Bitmap) extras.get("data");
 
             ImageView post_preview = (ImageView)dialog.findViewById(R.id.post_preview);
             post_preview.setImageBitmap(imageBitmap);
-
 
         }
     }
