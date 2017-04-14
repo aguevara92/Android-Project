@@ -400,8 +400,25 @@ public class MainActivity extends Activity
         StringRequest MyStringRequest = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                //This code is executed if the server responds, whether or not the response contains data.
-                //The String 'response' contains the server's response.
+                new Thread ()
+                {
+                    @Override
+                    public void run ()
+                    {
+                        final String s = getContent (baseUrl + "dbLoadDB.php");
+
+                        runOnUiThread (new Thread(new Runnable()
+                        {
+                            public void run()
+                            {
+                                parseContent (s);
+                                n ++;
+                                loadRecord ();
+                            }
+                        }));
+                    }
+                }.start ();
+
             }
             }, new Response.ErrorListener() { //Create an error listener to handle errors appropriately.
                 @Override
@@ -419,27 +436,6 @@ public class MainActivity extends Activity
                 }
             };
         MyRequestQueue.add(MyStringRequest);
-
-
-        
-        new Thread ()
-        {
-            @Override
-            public void run ()
-            {
-                final String s = getContent (baseUrl + "dbLoadDB.php");
-
-                runOnUiThread (new Thread(new Runnable()
-                {
-                    public void run()
-                    {
-                        parseContent (s);
-                        n ++;
-                        loadRecord ();
-                    }
-                }));
-            }
-        }.start ();
 
 
 
