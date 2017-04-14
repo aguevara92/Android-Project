@@ -142,8 +142,8 @@ public class MainActivity extends Activity implements LocationListener
             Manifest.permission.ACCESS_FINE_LOCATION
     };
 
-    private TextView latituteField;
-    private TextView longitudeField;
+    double myLatitude;
+    double myLongitude;
     private LocationManager locationManager;
     private String provider;
 
@@ -268,8 +268,6 @@ public class MainActivity extends Activity implements LocationListener
         });
 
 
-        latituteField = (TextView) findViewById(R.id.latitude_test);
-        longitudeField = (TextView) findViewById(R.id.longitude_test);
 
         // Get the location manager
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -281,11 +279,10 @@ public class MainActivity extends Activity implements LocationListener
 
         // Initialize the location fields
         if (location != null) {
-            System.out.println("Provider " + provider + " has been selected.");
+            Log.i("GPS", "Provider " + provider + " has been selected.");
             onLocationChanged(location);
         } else {
-            latituteField.setText("Location not available");
-            longitudeField.setText("Location not available");
+            Log.i("GPS", "No location available");
         }
 
 
@@ -424,8 +421,8 @@ public class MainActivity extends Activity implements LocationListener
         final String b64 = encodeBitmap(bitmap);
 
         // Provisional - get latitude and longitude
-        final String a = "0";
-
+        final String lat = "" + myLatitude;
+        final String lng = "" + myLongitude;
 
 
         RequestQueue MyRequestQueue = Volley.newRequestQueue(this);
@@ -464,8 +461,8 @@ public class MainActivity extends Activity implements LocationListener
                     Map<String, String> MyData = new HashMap<String, String>();
                     MyData.put("title", at); //Add the data you'd like to send to the server.
                     MyData.put("picture", b64); //Add the data you'd like to send to the server.
-                    MyData.put("latitude", a); //Add the data you'd like to send to the server.
-                    MyData.put("longitude", a); //Add the data you'd like to send to the server.
+                    MyData.put("latitude", lat); //Add the data you'd like to send to the server.
+                    MyData.put("longitude", lng); //Add the data you'd like to send to the server.
                     return MyData;
                 }
             };
@@ -629,10 +626,8 @@ public class MainActivity extends Activity implements LocationListener
 
     @Override
     public void onLocationChanged(Location location) {
-        double lat = location.getLatitude();
-        double lng = location.getLongitude();
-        latituteField.setText(String.valueOf(lat));
-        longitudeField.setText(String.valueOf(lng));
+        myLatitude = location.getLatitude();
+        myLongitude = location.getLongitude();
     }
 
     @Override

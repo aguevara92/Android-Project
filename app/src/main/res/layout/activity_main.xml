@@ -94,28 +94,6 @@
 
             </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:weightSum="1">
-
-                <TextView
-                    android:id="@+id/latitude_test"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.77"
-                    android:text="Title "
-                    android:typeface="monospace" />
-
-                <TextView
-                    android:id="@+id/longitude_test"
-                    android:layout_width="148dp"
-                    android:layout_height="wrap_content"
-                    android:text="Title "
-                    android:typeface="monospace" />
-
-            </LinearLayout>
-
 
             <LinearLayout
                 android:layout_width="match_parent"
