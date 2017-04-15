@@ -73,42 +73,6 @@ import com.android.volley.toolbox.Volley;
 import static android.content.ContentValues.TAG;
 
 
-class PostEntry
-{
-    String id;
-    String title;
-    String latitude;
-    String longitude;
-    String date;
-    String likes;
-    String picture;
-
-    public PostEntry (String i, String ti, String lat, String lon, String da, String li, String pi)
-    {
-        id = i;
-        title = ti;
-        latitude = lat;
-        longitude = lon;
-        date = da;
-        likes = li;
-        picture = pi;
-    }
-}
-
-class Posts
-{
-    static PostEntry[] postEntry;
-    static int count = 0;
-    static int newsInFocus = -1;
-
-    public static void init (int n)
-    {
-        postEntry = null; // OLD RECORDS IS NOW GARBAGE
-        postEntry = new PostEntry[n];
-        count = n;
-    }
-}
-
 
 
 public class MainActivity extends Activity implements LocationListener
