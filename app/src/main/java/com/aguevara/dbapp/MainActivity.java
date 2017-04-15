@@ -12,6 +12,8 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
@@ -80,6 +82,7 @@ public class MainActivity extends Activity implements LocationListener
     final Context context = this;
 
     Dialog dialog;
+    Dialog delete_dialog;
 
     Posts posts;
     PostEntry pe;
@@ -112,6 +115,13 @@ public class MainActivity extends Activity implements LocationListener
     double myLongitude;
     private LocationManager locationManager;
     private String provider;
+
+
+    // The following are used for the shake detection
+    private SensorManager mSensorManager;
+    private Sensor mAccelerometer;
+    private ShakeDetector mShakeDetector;
+    boolean isDeleteDialogOpen = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -223,7 +233,7 @@ public class MainActivity extends Activity implements LocationListener
         {
             public void onClick (View view)
             {
-                deleteRecord ();
+                openDeleteDialog ();
             }
         });
 
@@ -253,6 +263,20 @@ public class MainActivity extends Activity implements LocationListener
         } else {
             Log.i("GPS", "No location available");
         }
+
+
+        // ShakeDetector initialization
+        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        mAccelerometer = mSensorManager
+                .getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        mShakeDetector = new ShakeDetector();
+        mShakeDetector.setOnShakeListener(new ShakeDetector.OnShakeListener() {
+
+            @Override
+            public void onShake(int count) {
+                handleShakeEvent(count);
+            }
+        });
 
 
     }
@@ -458,7 +482,7 @@ public class MainActivity extends Activity implements LocationListener
                     public void run()
                     {
                         parseContent (s);
-                        n--;
+
                         loadRecord ();
                     }
                 }));
@@ -519,6 +543,25 @@ public class MainActivity extends Activity implements LocationListener
 
 
         dialog.show();
+    }
+
+    public void openDeleteDialog (){
+        // custom dialog
+        delete_dialog= new Dialog(context);
+        delete_dialog.setContentView(R.layout.delete_post);
+        isDeleteDialogOpen = true;
+
+        // if button is clicked, open the camera
+        Button btn_cancel = (Button) delete_dialog.findViewById(R.id.btn_cancel);
+        btn_cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                isDeleteDialogOpen = false;
+                delete_dialog.dismiss();
+            }
+        });
+
+        delete_dialog.show();
     }
 
 
@@ -583,14 +626,21 @@ public class MainActivity extends Activity implements LocationListener
     protected void onResume() {
         super.onResume();
         locationManager.requestLocationUpdates(provider, 400, 1, this);
+
+        // Add the following line to register the Session Manager Listener onResume
+        mSensorManager.registerListener(mShakeDetector, mAccelerometer,	SensorManager.SENSOR_DELAY_UI);
     }
 
     /* Remove the locationlistener updates when Activity is paused */
     @Override
     protected void onPause() {
-        super.onPause();
         locationManager.removeUpdates(this);
+
+        mSensorManager.unregisterListener(mShakeDetector);
+
+        super.onPause();
     }
+
 
     @Override
     public void onLocationChanged(Location location) {
@@ -615,6 +665,12 @@ public class MainActivity extends Activity implements LocationListener
     public void onProviderDisabled(String provider) {
         Toast.makeText(this, "Disabled provider " + provider,
                 Toast.LENGTH_SHORT).show();
+    }
+
+    public void handleShakeEvent(int count){
+        if (isDeleteDialogOpen){
+            deleteRecord();
+        }
     }
 
 
