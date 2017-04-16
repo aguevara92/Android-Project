@@ -689,8 +689,10 @@ public class MainActivity extends Activity implements LocationListener
     public void openMap(View view) {
         //Intent intent = new Intent(this, Map.class);
         Intent intent = new Intent("com.aguevara.dbapp.Map");
-        String message = Posts.postEntry[n].latitude;;
-        intent.putExtra(EXTRA_MESSAGE, message);
+        Bundle extras = new Bundle();
+        extras.putString("lat",Posts.postEntry[n].latitude);
+        extras.putString("lon",Posts.postEntry[n].longitude);
+        intent.putExtras(extras);
         startActivity(intent);
     }
 
