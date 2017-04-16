@@ -21,6 +21,7 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.os.Vibrator;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
@@ -158,34 +159,6 @@ public class MainActivity extends Activity implements LocationListener
         }.start ();
 
 
-
-        final Button btn_load = (Button)findViewById(R.id.btn_load);
-        btn_load.setOnClickListener(new View.OnClickListener()
-        {
-            public void onClick (View view)
-            {
-                new Thread ()
-                {
-                    @Override
-                    public void run ()
-                    {
-                        final String s = getContent (baseUrl + "dbLoadDB.php");
-
-                        Log.i("XML",s);
-
-                        runOnUiThread (new Thread(new Runnable()
-                        {
-                            public void run()
-                            {
-                                parseContent (s);
-                                n = 0;
-                                loadRecord ();
-                            }
-                        }));
-                    }
-                }.start ();
-            }
-        });
 
         final Button btn_previous = (Button)findViewById(R.id.btn_previous);
         btn_previous.setOnClickListener(new View.OnClickListener()
@@ -400,15 +373,8 @@ public class MainActivity extends Activity implements LocationListener
         TextView text_title = (TextView)findViewById(R.id.text_title);
         text_title.setText (Posts.postEntry[n].title);
 
-        // location coords display
-        TextView text_location = (TextView)findViewById(R.id.text_location);
-        text_location.setText (Posts.postEntry[n].latitude + " - " + Posts.postEntry[n].longitude );
-
-        // date is missing
-
         TextView text_likes = (TextView)findViewById(R.id.text_likes);
         text_likes.setText (Posts.postEntry[n].likes);
-
 
         ImageView post_image = (ImageView)findViewById(R.id.post_image);
         loadingImageTask = new ImageLoadTask((Posts.postEntry[n].picture), post_image).execute();
@@ -493,7 +459,9 @@ public class MainActivity extends Activity implements LocationListener
                     public void run()
                     {
                         parseContent (s);
-
+                        if (n > 0) {
+                            n--;
+                        }
                         loadRecord ();
                     }
                 }));
@@ -548,10 +516,6 @@ public class MainActivity extends Activity implements LocationListener
                 dialog.dismiss();
             }
         });
-
-        // if button is clicked, add the post and close the custom dialog
-        TextView location_test = (TextView) dialog.findViewById(R.id.location_test);
-
 
         dialog.show();
     }
@@ -681,6 +645,14 @@ public class MainActivity extends Activity implements LocationListener
     public void handleShakeEvent(int count){
         if (isDeleteDialogOpen){
             deleteRecord();
+
+            TextView text_title = (TextView)delete_dialog.findViewById(R.id.delete_text);
+            text_title.setText ("The post has been deleted");
+            isDeleteDialogOpen = false;
+
+            // Vibrate for 200 milliseconds
+            Vibrator v = (Vibrator) this.context.getSystemService(Context.VIBRATOR_SERVICE);
+            v.vibrate(200);
         }
     }
 

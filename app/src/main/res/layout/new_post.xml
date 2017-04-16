@@ -27,7 +27,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1.01"
                 android:text="Title "
-                android:typeface="monospace" />
+                android:typeface="normal" />
 
         </LinearLayout>
 
@@ -56,13 +56,16 @@
 
             <Button
                 android:id="@+id/btn_add_photo"
+                style="@android:style/Widget.Material.Button.Colored"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.22"
+                android:backgroundTint="@color/colorPrimary"
                 android:text="Add Photo" />
 
             <Button
                 android:id="@+id/btn_submit"
+                style="@android:style/Widget.Material.Button.Colored"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="0.22"
