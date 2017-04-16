@@ -73,8 +73,7 @@ import com.android.volley.toolbox.Volley;
 
 
 import static android.content.ContentValues.TAG;
-
-
+import static android.provider.AlarmClock.EXTRA_MESSAGE;
 
 
 public class MainActivity extends Activity implements LocationListener
@@ -122,6 +121,9 @@ public class MainActivity extends Activity implements LocationListener
     private Sensor mAccelerometer;
     private ShakeDetector mShakeDetector;
     boolean isDeleteDialogOpen = false;
+
+
+    public static final String EXTRA_MESSAGE = "com.aguevara.dbapp.Map";
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -243,6 +245,15 @@ public class MainActivity extends Activity implements LocationListener
             public void onClick (View view)
             {
                 likePost ();
+            }
+        });
+
+        final Button btn_view_map = (Button)findViewById(R.id.btn_view_map);
+        btn_view_map.setOnClickListener(new View.OnClickListener()
+        {
+            public void onClick (View view)
+            {
+                openMap (view);
             }
         });
 
@@ -671,6 +682,16 @@ public class MainActivity extends Activity implements LocationListener
         if (isDeleteDialogOpen){
             deleteRecord();
         }
+    }
+
+
+    /** Called when the user taps the Send button */
+    public void openMap(View view) {
+        //Intent intent = new Intent(this, Map.class);
+        Intent intent = new Intent("com.aguevara.dbapp.Map");
+        String message = Posts.postEntry[n].latitude;;
+        intent.putExtra(EXTRA_MESSAGE, message);
+        startActivity(intent);
     }
 
 
