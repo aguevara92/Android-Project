@@ -3,15 +3,10 @@ package com.aguevara.dbapp;
 import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.location.Criteria;
@@ -20,13 +15,9 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Environment;
 import android.os.Vibrator;
 import android.provider.MediaStore;
-import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
@@ -35,18 +26,14 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -71,21 +58,12 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
-
-
-import static android.content.ContentValues.TAG;
-import static android.provider.AlarmClock.EXTRA_MESSAGE;
-
-
 public class MainActivity extends Activity implements LocationListener
 {
     final Context context = this;
 
     Dialog dialog;
     Dialog delete_dialog;
-
-    Posts posts;
-    PostEntry pe;
 
     String baseUrl = "http://andrs.ec/dev/mobile_computing/assignment2/";
 
@@ -94,15 +72,7 @@ public class MainActivity extends Activity implements LocationListener
     AsyncTask loadingImageTask;
 
     private Uri fileUri;
-    String picturePath;
-    String ba1;
-    Uri selectedImage;
-    Bitmap photo;
-    ProgressDialog prgDialog;
-    String encodedString;
-    String imgPath, fileName;
-    Bitmap bitmap;
-    private static int RESULT_LOAD_IMG = 1;
+
 
     // CAMERA Permissions
     private static final int REQUEST_CAMERA = 1;
@@ -338,13 +308,16 @@ public class MainActivity extends Activity implements LocationListener
                 Element likes = (Element)entry.getElementsByTagName("likes").item(0);
                 Element picture = (Element)entry.getElementsByTagName("picture").item(0);
 
+
                 Posts.postEntry[i].id = id.getFirstChild().getNodeValue();
-                Posts.postEntry[i].title = title.getFirstChild().getNodeValue();
-                Posts.postEntry[i].latitude = latitude.getFirstChild().getNodeValue();
-                Posts.postEntry[i].longitude = longitude.getFirstChild().getNodeValue();
-                Posts.postEntry[i].date = date.getFirstChild().getNodeValue();
-                Posts.postEntry[i].likes = likes.getFirstChild().getNodeValue();
-                Posts.postEntry[i].picture = picture.getFirstChild().getNodeValue();
+
+                Posts.postEntry[i].title = (title.getFirstChild() != null) ? title.getFirstChild().getNodeValue() : "";
+                Posts.postEntry[i].latitude = (latitude.getFirstChild() != null) ? latitude.getFirstChild().getNodeValue() : "";
+                Posts.postEntry[i].longitude = (longitude.getFirstChild() != null) ? longitude.getFirstChild().getNodeValue() : "";
+                Posts.postEntry[i].date = (date.getFirstChild() != null) ? date.getFirstChild().getNodeValue() : "";
+                Posts.postEntry[i].likes = (likes.getFirstChild() != null) ? likes.getFirstChild().getNodeValue() : "";
+                Posts.postEntry[i].picture = (picture.getFirstChild() != null) ? picture.getFirstChild().getNodeValue() : "";
+
             }
         }
         catch (MalformedURLException e)
@@ -390,7 +363,7 @@ public class MainActivity extends Activity implements LocationListener
         Bitmap bitmap = post_preview.getDrawingCache();
         final String b64 = encodeBitmap(bitmap);
 
-        // Provisional - get latitude and longitude
+        // get latitude and longitude
         final String lat = "" + myLatitude;
         final String lng = "" + myLongitude;
 
@@ -437,9 +410,6 @@ public class MainActivity extends Activity implements LocationListener
                 }
             };
         MyRequestQueue.add(MyStringRequest);
-
-
-
     }
 
 

@@ -1,9 +1,5 @@
 package com.aguevara.dbapp;
 
-/**
- * Created by aguevara on 14/04/2017.
- */
-
 public class PostEntry
 {
     String id;
